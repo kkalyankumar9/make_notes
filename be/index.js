@@ -2,12 +2,27 @@ const express = require("express");
 const { connection } = require("./db");
 const { userRoutes } = require("./routes/userRoutes");
 const { notesRoutes } = require("./routes/notesRoutes");
+const jwt = require("jsonwebtoken");
 const app = express();
 
 app.use(express.json());
 app.use("/users", userRoutes);
 app.use("/notes", notesRoutes);
+app.get("/refreash",(req,res)=>{
+  const rtoken=req.headers.authorization
 
+  const decoded=jwt.verify(rtoken,"notes")
+
+  try {
+    if(decoded){
+      const token=jwt.sign({userID:decoded.userID,user:decoded.user}, "app",{expiresIn:300});
+      res.send({"msg":"refreshtoken ",token:token})
+
+    }
+  } catch (error) {
+    
+  }
+})
 app.listen(8080, async () => {
   try {
     await connection;
@@ -17,3 +32,5 @@ app.listen(8080, async () => {
     console.log(error);
   }
 });
+
+

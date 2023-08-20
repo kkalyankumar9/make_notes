@@ -45,8 +45,11 @@ userRoutes.post("/signin", async (req, res) => {
       bcrypt.compare(password, user.password, (err, result) => {
         // result == true
         if (result) {
-          const token = jwt.sign({ userID: user._id, user: user.name }, "app");
-          res.status(200).send({ msg: "Login successfull", token: token });
+          const token = jwt.sign({ userID: user._id, user: user.name }, "app",{expiresIn:300});
+
+          const refreshtoken = jwt.sign({ userID: user._id, user: user.name }, "notes",{expiresIn:600});
+
+          res.status(200).send({ msg: "Login successfull", token: token ,refreshtoken:refreshtoken});
         } else {
           res.status(400).send({ err: "password does not match" });
         }
