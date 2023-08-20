@@ -16,7 +16,7 @@ userRoutes.post("/signup", async (req, res) => {
       return res.status(400).send({ msg: "User is Already exists" });
     } else {
       if (validatePassword(password)) {
-        console.log(password);
+        // console.log(password);
         bcrypt.hash(password, 2, async (err, hash) => {
           // Store hash in your password DB.
           if (err) {
@@ -45,11 +45,21 @@ userRoutes.post("/signin", async (req, res) => {
       bcrypt.compare(password, user.password, (err, result) => {
         // result == true
         if (result) {
-          const token = jwt.sign({ userID: user._id, user: user.name }, "app",{expiresIn:300});
+          const token = jwt.sign({ userID: user._id, user: user.name }, "app", {
+            expiresIn: 300,
+          });
 
-          const refreshtoken = jwt.sign({ userID: user._id, user: user.name }, "notes",{expiresIn:600});
+          const refreshtoken = jwt.sign(
+            { userID: user._id, user: user.name },
+            "notes",
+            { expiresIn: 600 }
+          );
 
-          res.status(200).send({ msg: "Login successfull", token: token ,refreshtoken:refreshtoken});
+          res.status(200).send({
+            msg: "Login successfull",
+            token: token,
+            refreshtoken: refreshtoken,
+          });
         } else {
           res.status(400).send({ err: "password does not match" });
         }
@@ -66,11 +76,13 @@ userRoutes.get("/logout", async (req, res) => {
   const headers = req.headers.authorization;
   try {
     if (headers) {
-      // await BlackListModule.updateMany({}, { $push: { blacklist: [ headers ] } });
-      await BlackListModule.updateMany({}, { $push: { blacklist: [headers] } });
-      console.log(headers);
+      console.log("Token to be blacklisted:", headers);
 
-      res.status(200).send({ msg: " user has Successfully Logout!!" });
+      await BlackListModule.updateMany({}, { $push: { blacklist: [headers] } });
+
+      console.log("Updated blacklist:", headers);
+
+      res.status(200).send({ msg: "User has Successfully Logout!!" });
     }
   } catch (error) {
     res.status(400).send({ error: error });
@@ -79,13 +91,9 @@ userRoutes.get("/logout", async (req, res) => {
 
 module.exports = { userRoutes };
 
-//password validation
-
 function validatePassword(password) {
-  // Regular expression pattern
   const pattern =
     /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~])(?=.{8,})/;
 
-  // Test the password against the pattern
   return pattern.test(password);
 }
